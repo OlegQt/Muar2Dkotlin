@@ -18,9 +18,17 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
+        android:background="?attr/colorOnSecondary"
         app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
         <FrameLayout
+            android:id="@+id/layA"
+            android:layout_width="40dp"
+            android:layout_height="12dp"
+            android:layout_gravity="center_horizontal"/>
+
+        <FrameLayout
+            android:id="@+id/layB"
             android:layout_width="40dp"
             android:layout_height="4dp"
             android:background="@color/white"

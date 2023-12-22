@@ -1,5 +1,7 @@
 package com.muar2d
 
+import android.graphics.Color
+import android.graphics.Paint
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
@@ -40,14 +42,22 @@ class MainActivity : AppCompatActivity() {
         sheetBehaviour.isHideable = false
 
         handler.postDelayed({
-            sheetBehaviour.peekHeight = binding.appbarSheet.height
+            sheetBehaviour.peekHeight =
+                binding.appbarSheet.height + binding.layA.height + binding.layB.height
             sheetBehaviour.state = BottomSheetBehavior.STATE_COLLAPSED
         }, 300)
 
         val renderTarget = binding.mainSurfaceView.holder
-        renderTarget.addCallback(object : SurfaceHolder.Callback{
+        renderTarget.addCallback(object : SurfaceHolder.Callback {
             override fun surfaceCreated(holder: SurfaceHolder) {
-                showSnackBar("Holder Created")
+                Thread() {
+                    while (true) {
+                        val canvas = renderTarget.lockCanvas()
+                        viewModel.drawOnHolder(canvas)
+                        viewModel.calculate()
+                        renderTarget.unlockCanvasAndPost(canvas)
+                    }
+                }.start()
             }
 
             override fun surfaceChanged(
@@ -56,7 +66,10 @@ class MainActivity : AppCompatActivity() {
                 width: Int,
                 height: Int
             ) {
-                showSnackBar("Holder Changed $width x $height")
+                viewModel.setScreenDimensions(
+                    newHeight = height.toFloat(),
+                    newWidth = width.toFloat()
+                )
             }
 
             override fun surfaceDestroyed(holder: SurfaceHolder) {
