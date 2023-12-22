@@ -1,13 +1,10 @@
 package com.muar2d
 
-import android.graphics.Color
-import android.graphics.Paint
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.SurfaceHolder
-import android.view.SurfaceView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
@@ -20,6 +17,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var viewModel: MainViewModel
 
     private val handler = Handler(Looper.getMainLooper())
+
+    var renderThread: Thread = Thread()
+
+    private var isRendering = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,20 +45,24 @@ class MainActivity : AppCompatActivity() {
         handler.postDelayed({
             sheetBehaviour.peekHeight =
                 binding.appbarSheet.height + binding.layA.height + binding.layB.height
+            sheetBehaviour.maxHeight = 1000
             sheetBehaviour.state = BottomSheetBehavior.STATE_COLLAPSED
         }, 300)
 
         val renderTarget = binding.mainSurfaceView.holder
         renderTarget.addCallback(object : SurfaceHolder.Callback {
             override fun surfaceCreated(holder: SurfaceHolder) {
-                Thread() {
+                renderThread = Thread() {
                     while (true) {
-                        val canvas = renderTarget.lockCanvas()
-                        viewModel.drawOnHolder(canvas)
-                        viewModel.calculate()
-                        renderTarget.unlockCanvasAndPost(canvas)
+                        if (isRendering) {
+                            val canvas = renderTarget.lockCanvas()
+                            viewModel.drawOnHolder(canvas)
+                            viewModel.calculate()
+                            renderTarget.unlockCanvasAndPost(canvas)
+                        }
                     }
-                }.start()
+                }
+                renderThread.start()
             }
 
             override fun surfaceChanged(
@@ -73,7 +78,17 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun surfaceDestroyed(holder: SurfaceHolder) {
-                //TODO("Not yet implemented")
+                isRendering=false
+                var retry = true
+
+                while (retry) {
+                    try {
+                        renderThread.join()
+                        retry = false
+                    } catch (e: InterruptedException) {
+                        showSnackBar(e.message.toString())
+                    }
+                }
             }
         })
     }
@@ -85,10 +100,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setBehaviour() {
-        binding.btnAction.setOnClickListener {
-            val sheetBehaviour = BottomSheetBehavior.from(binding.logSheet)
-            sheetBehaviour.state = BottomSheetBehavior.STATE_COLLAPSED
-            showSnackBar(stringToShow = "Action")
+        binding.slider.addOnChangeListener { rangeSlider, value, fromUser ->
+            viewModel.angleIncrement = value
         }
     }
 

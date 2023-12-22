@@ -16,7 +16,7 @@
     <LinearLayout
         android:id="@+id/log_sheet"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="1000dp"
         android:orientation="vertical"
         android:background="?attr/colorOnSecondary"
         app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
@@ -44,11 +44,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_action"
-            android:layout_width="wrap_content"
+        <com.google.android.material.slider.Slider
+            android:id="@+id/slider"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Action"/>
+            android:valueFrom="0"
+            android:valueTo="100"
+            android:stepSize="1"/>
+
     </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

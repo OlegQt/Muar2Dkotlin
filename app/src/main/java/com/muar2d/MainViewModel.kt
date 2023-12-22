@@ -7,6 +7,8 @@ import android.graphics.Path
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 import kotlin.math.sign
 import kotlin.random.Random
 
@@ -17,10 +19,9 @@ class MainViewModel : ViewModel() {
     private var screenHeight = 0.0f
     private var screenWidth = 0.0f
 
-    private var isRendering = false
-
     private var paint = Paint()
     private var angle = 0.0
+    var angleIncrement = 1.0f
 
     private val vectorList = mutableListOf<Dx3Vector>()
 
@@ -34,7 +35,7 @@ class MainViewModel : ViewModel() {
             end.y = screenHeight / 2
         }
 
-        for (angle in 0 until 360 step 2) {
+        for (angle in 0 until 360 step 3) {
             vectorList.add(vector.rotateVector(angle.toDouble()))
         }
     }
@@ -47,13 +48,16 @@ class MainViewModel : ViewModel() {
     }
 
     fun calculate() {
-        angle += 0.0001
+        angle = 0.01 * angleIncrement
 
-        for (vector in vectorList) {
-            with(vector){
-                end = vector.rotateVector(angle).end
+        viewModelScope.launch {
+            for (vector in vectorList) {
+                with(vector){
+                    end = vector.rotateVector(angle).end
+                }
             }
         }
+
     }
 
     fun drawOnHolder(canvas: Canvas) {
@@ -63,11 +67,7 @@ class MainViewModel : ViewModel() {
         }
         canvas.drawRect(0.0f, 0.0f, screenWidth, screenHeight, paint)
 
-
         paint.color = Color.RED
-
-
-
 
         for (vector in vectorList) {
             canvas.drawPath(vector.createThickerPath(), paint)
