@@ -1,5 +1,6 @@
 package com.muar2d
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -19,7 +20,9 @@ class MainActivity : AppCompatActivity() {
 
     private val handler = Handler(Looper.getMainLooper())
 
-    private val renderThread = RenderThread()
+    private val renderThread = RenderThread(){errorMessage ->
+        showSnackBar(errorMessage)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,25 +39,31 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setUpSurface() {
-       binding.mainSurfaceView.holder.addCallback(object : SurfaceHolder.Callback {
+        binding.mainSurfaceView.holder.addCallback(object : SurfaceHolder.Callback {
             override fun surfaceCreated(holder: SurfaceHolder) {
                 renderThread.setHolder(holder)
                 renderThread.setRunning(true)
                 renderThread.start()
             }
-            override fun surfaceChanged(holder: SurfaceHolder,format: Int,width: Int,height: Int) {
+
+            override fun surfaceChanged(
+                holder: SurfaceHolder,
+                format: Int,
+                width: Int,
+                height: Int
+            ) {
 
             }
+
             override fun surfaceDestroyed(holder: SurfaceHolder) {
                 var retry = true
                 renderThread.setRunning(false)
 
-                while (retry){
+                while (retry) {
                     try {
                         renderThread.join()
                         retry = false
-                    }
-                    catch (e:Exception){
+                    } catch (e: Exception) {
 
                     }
                 }
@@ -63,7 +72,7 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    private fun setUpBottomSheet(){
+    private fun setUpBottomSheet() {
         val sheetBehaviour = BottomSheetBehavior.from(binding.logSheet)
         sheetBehaviour.peekHeight = 0
         sheetBehaviour.state = BottomSheetBehavior.STATE_HIDDEN
@@ -88,21 +97,30 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private fun setBehaviour() {
         binding.slider.addOnChangeListener { rangeSlider, value, fromUser ->
             renderThread.setAnimationSpeed(value.toInt())
         }
 
-        binding.mainSurfaceView.setOnTouchListener { view, event ->
-            when(event.action){
-                MotionEvent.ACTION_DOWN ->{
+        binding.mainSurfaceView.setOnTouchListener { v, event ->
+            when (event?.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    //renderThread.addFingerTouch(xPos = event.x, yPos = event.y)
+                    true
+                }
+
+                MotionEvent.ACTION_UP -> {
+                    //renderThread.addFingerTouch(xPos = event.x, yPos = event.y)
+                    true
+                }
+
+                MotionEvent.ACTION_MOVE ->{
                     renderThread.addFingerTouch(xPos = event.x, yPos = event.y)
                     true
                 }
-                MotionEvent.ACTION_UP ->{
-                    view.performClick()
-                    true
-                }
+
+
 
                 else -> {
                     false
@@ -110,9 +128,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        binding.mainSurfaceView.setOnClickListener {
-
-        }
     }
 
     private fun showSnackBar(stringToShow: String) {
