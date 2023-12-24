@@ -61,7 +61,7 @@ class RenderThread : Thread() {
         this.pathList.add(path)
     }
 
-    fun shiftPoints(deltaTime: Long) {
+    private fun shiftPoints(deltaTime: Long) {
         val speed = 100 // Adjust the speed as desired
         val displacement = (speed * deltaTime / 1_000_000).toFloat() // Convert nanoseconds to seconds and calculate displacement
 
