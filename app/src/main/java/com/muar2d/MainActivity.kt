@@ -106,12 +106,12 @@ class MainActivity : AppCompatActivity() {
         binding.mainSurfaceView.setOnTouchListener { v, event ->
             when (event?.action) {
                 MotionEvent.ACTION_DOWN -> {
-                    //renderThread.addFingerTouch(xPos = event.x, yPos = event.y)
+                    renderThread.setScreenTouchingFlag(true)
                     true
                 }
 
                 MotionEvent.ACTION_UP -> {
-                    //renderThread.addFingerTouch(xPos = event.x, yPos = event.y)
+                    renderThread.setScreenTouchingFlag(false)
                     true
                 }
 

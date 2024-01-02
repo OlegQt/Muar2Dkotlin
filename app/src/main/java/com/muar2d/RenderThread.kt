@@ -13,12 +13,12 @@ class RenderThread(private val errorHandler: ErrorHandler) : Thread() {
     private var isRunning = false
 
     private var previousFrameTime: Long = 0
-
     private var paint = Paint()
-
     private var animationSpeed = 0
+    private var isTouchingScreen:Boolean = false
 
     private val pathList = mutableListOf<Path>()
+    private val fingerTrack = FingerTrack()
 
 
     override fun run() {
@@ -48,6 +48,10 @@ class RenderThread(private val errorHandler: ErrorHandler) : Thread() {
         }
     }
 
+    fun setScreenTouchingFlag(flag:Boolean){
+        this.isTouchingScreen = flag
+    }
+
     fun setHolder(newRenderHolder: SurfaceHolder) {
         renderTarget = newRenderHolder
         errorHandler.sendMsg("HolderCreated")
@@ -62,21 +66,13 @@ class RenderThread(private val errorHandler: ErrorHandler) : Thread() {
     }
 
     fun addFingerTouch(xPos: Float, yPos: Float) {
-        val path = Path().apply {
-            addCircle(xPos, yPos, 20.0f, Path.Direction.CCW)
-            close()
+        if (isTouchingScreen){
+
         }
-        this.pathList.add(path)
     }
 
     private fun shiftPoints(deltaTime: Long) {
-        val speed = 100 // Adjust the speed as desired
-        val displacement =
-            (speed * deltaTime / 1_000_000).toFloat() // Convert nanoseconds to seconds and calculate displacement
 
-        for (path in pathList) {
-            path.offset(0f, 0.1f * animationSpeed)
-        }
     }
 
     private fun render(canvas: Canvas, time: Long) {
